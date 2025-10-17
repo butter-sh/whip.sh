@@ -1,0 +1,20 @@
+name: "whip.sh"
+version: "1.0.0"
+description: "Release cycle management for arty.sh projects"
+author: ""
+license: "MIT"
+
+# Dependencies
+references:
+  # No external dependencies required
+
+# Entry point script
+main: "whip.sh"
+
+# Available commands
+scripts:
+  install: "bash whip.sh hooks install"
+  release: "bash whip.sh release"
+  release-major: "bash whip.sh release major"
+  release-minor: "bash whip.sh release minor"
+  release-patch: "bash whip.sh release patch"
