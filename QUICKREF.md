@@ -38,7 +38,15 @@ bash setup.sh
 ./whip.sh mono version         # Show all versions
 ./whip.sh mono bump patch      # Bump all projects
 ./whip.sh mono status          # Git status all
-./whip.sh mono version "lib-*" # Filter by pattern
+./whip.sh mono version . "lib-*" # Filter by pattern
+
+# Execute commands on all projects
+./whip.sh mono exec "git status"
+./whip.sh mono exec 'echo $WHIP_PROJECT_NAME'
+./whip.sh mono exec 'git add . && git commit -m "update" && git push'
+./whip.sh mono exec "npm test" . "lib-*"
+
+./whip.sh mono help            # Detailed help
 ```
 
 ### Changelog

@@ -435,6 +435,63 @@ find_arty_projects() {
     done
 }
 
+# Execute bash command on monorepo projects
+monorepo_exec() {
+    local bash_cmd="$1"
+    local root_dir="${2:-.}"
+    local pattern="${3:-*}"
+    
+    if [[ -z "$bash_cmd" ]]; then
+        log_error "Command required"
+        return 1
+    fi
+    
+    log_step "Scanning for arty.yml projects in $root_dir"
+    
+    local projects=()
+    while IFS= read -r project_dir; do
+        projects+=("$project_dir")
+    done < <(find_arty_projects "$root_dir" "$pattern")
+    
+    if [[ ${#projects[@]} -eq 0 ]]; then
+        log_warn "No arty.yml projects found matching pattern: $pattern"
+        return 1
+    fi
+    
+    log_info "Found ${#projects[@]} project(s)"
+    log_info "Executing: $bash_cmd"
+    echo
+    
+    local failed=0
+    for project_dir in "${projects[@]}"; do
+        local project_name=$(basename "$project_dir")
+        echo -e "${CYAN}━━━ $project_name ━━━${NC}"
+        
+        (
+            # Export variables for use in command
+            export WHIP_PROJECT_DIR="$project_dir"
+            export WHIP_PROJECT_NAME="$project_name"
+            
+            cd "$project_dir" || exit 1
+            
+            # Execute the bash command
+            eval "$bash_cmd"
+        ) || {
+            log_error "Failed for $project_name"
+            failed=$((failed + 1))
+        }
+        
+        echo
+    done
+    
+    if [[ $failed -gt 0 ]]; then
+        log_warn "$failed project(s) failed"
+        return 1
+    else
+        log_success "All projects processed successfully"
+    fi
+}
+
 # Batch operation on monorepo projects
 monorepo_batch() {
     local command="$1"
@@ -503,6 +560,144 @@ monorepo_batch() {
     fi
 }
 
+# Show comprehensive mono help
+show_mono_help() {
+    cat << 'EOF'
+whip.sh mono - Monorepo management commands
+
+USAGE:
+    whip mono <subcommand> [options] [pattern]
+
+SUBCOMMANDS:
+    list [root] [pattern]              List all arty.yml projects
+    version [root] [pattern]           Show version of all projects  
+    bump <type> [root] [pattern]       Bump version (major|minor|patch)
+    status [root] [pattern]            Show git status for all projects
+    exec <command> [root] [pattern]    Execute bash command on all projects
+    help                               Show this help message
+
+ARGUMENTS:
+    root        Root directory to search (default: current directory)
+    pattern     Glob pattern to filter projects (default: *)
+    type        Version bump type: major, minor, or patch
+    command     Bash command or script to execute
+
+AVAILABLE VARIABLES (in exec):
+    $WHIP_PROJECT_DIR     Full path to project directory
+    $WHIP_PROJECT_NAME    Project name (basename)
+    $PWD                  Current directory (already cd'd into project)
+
+EXAMPLES:
+
+  Basic Operations:
+    whip mono list                    # List all projects in current dir
+    whip mono list ../monorepo        # List projects in specific dir
+    whip mono list . "lib-*"          # List only lib-* projects
+    whip mono version                 # Show all project versions
+    whip mono status                  # Git status for all projects
+
+  Version Management:
+    whip mono bump patch              # Bump patch version for all
+    whip mono bump minor "lib-*"      # Bump minor for lib-* projects
+    whip mono bump major . "*-core"   # Bump major for *-core projects
+
+  Executing Commands:
+    # Simple commands
+    whip mono exec "pwd"
+    whip mono exec "echo \$WHIP_PROJECT_NAME"
+    whip mono exec "git status"
+    
+    # Using project variables
+    whip mono exec 'echo "Project: $WHIP_PROJECT_NAME at $WHIP_PROJECT_DIR"'
+    
+    # Multi-line commands (use quotes)
+    whip mono exec 'git add . && git commit -m "chore: update" && git push'
+    
+    # Conditional execution
+    whip mono exec 'if [[ -f package.json ]]; then npm install; fi'
+    
+    # Complex operations
+    whip mono exec '
+        echo "Cleaning $WHIP_PROJECT_NAME..."
+        rm -rf node_modules dist
+        echo "Building..."
+        npm run build
+    '
+    
+    # With pattern filtering
+    whip mono exec "npm test" . "lib-*"
+    whip mono exec "make clean && make" . "*-service"
+
+  Real-World Scenarios:
+    # Commit and push all projects
+    whip mono exec 'git add . && git commit -m "chore: streamline" && git push origin main'
+    
+    # Update dependencies
+    whip mono exec 'arty deps'
+    
+    # Run tests
+    whip mono exec 'bash test.sh'
+    
+    # Create git tags
+    whip mono exec 'git tag -a v1.0.0 -m "Release 1.0.0" && git push --tags'
+    
+    # Check for uncommitted changes
+    whip mono exec '[[ -n $(git status --porcelain) ]] && echo "Has changes" || echo "Clean"'
+    
+    # Generate documentation
+    whip mono exec 'leaf.sh . && echo "Docs generated"'
+    
+    # Sync with remote
+    whip mono exec 'git fetch && git pull origin main'
+
+PATTERN MATCHING:
+    Glob patterns filter which projects to process:
+    
+    *           All projects (default)
+    lib-*       Projects starting with "lib-"
+    *-core      Projects ending with "-core"
+    app-*       Projects starting with "app-"
+    *-service   Projects ending with "-service"
+    test-*      Projects starting with "test-"
+
+PROJECT DISCOVERY:
+    whip searches for arty.yml files up to 2 levels deep:
+    
+    monorepo/
+    ├── lib-core/
+    │   └── arty.yml          ✓ Found
+    ├── services/
+    │   ├── api-service/
+    │   │   └── arty.yml      ✓ Found
+    │   └── web-service/
+    │       └── arty.yml      ✓ Found
+    └── tools/
+        └── deep/
+            └── nested/
+                └── arty.yml  ✗ Too deep (>2 levels)
+
+ERROR HANDLING:
+    - Individual project failures don't stop the batch
+    - Failed projects are reported at the end
+    - Exit code reflects overall success/failure
+    - Use -e in commands for strict error handling
+
+TIPS:
+    - Quote commands with special characters
+    - Use single quotes to prevent variable expansion
+    - Test commands on one project first
+    - Use pattern matching to limit scope
+    - Check for uncommitted changes before operations
+    - Combine with other whip commands for workflows
+
+SEE ALSO:
+    whip --help              Main help
+    whip release --help      Release workflow help
+    whip hooks --help        Git hooks help
+
+EOF
+}
+
 # Show usage
 show_usage() {
     cat << 'EOF'
@@ -531,10 +726,12 @@ HOOK COMMANDS:
     hooks create                 Create default hook templates
 
 MONOREPO COMMANDS:
-    mono list [pattern]          List arty.yml projects in subdirectories
-    mono version [pattern]       Show versions of all projects
-    mono bump <type> [pattern]   Bump version for all projects
-    mono status [pattern]        Show git status for all projects
+    mono list [root] [pattern]          List arty.yml projects
+    mono version [root] [pattern]       Show versions of all projects
+    mono bump <type> [root] [pattern]   Bump version for all projects
+    mono status [root] [pattern]        Show git status for all projects
+    mono exec <cmd> [root] [pattern]    Execute bash command on all projects
+    mono help                           Show detailed mono help
 
 OPTIONS:
     --no-push                    Don't push commits/tags (for release)
@@ -559,10 +756,17 @@ EXAMPLES:
     whip mono list
 
     # Monorepo: bump patch version for all projects matching "lib-*"
-    whip mono bump patch "lib-*"
+    whip mono bump patch . "lib-*"
+
+    # Monorepo: execute command on all projects
+    whip mono exec "git status"
+    whip mono exec 'git add . && git commit -m "update" && git push' . "lib-*"
 
     # Release without pushing
     whip release --no-push
+
+    # Get detailed monorepo help
+    whip mono help
 
 HOOKS:
     whip installs pluggable git hooks for code quality:
@@ -589,6 +793,11 @@ MONOREPO SUPPORT:
     - "lib-*"    Match all projects starting with "lib-"
     - "*-core"   Match all projects ending with "-core"
     - "*"        Match all projects (default)
+    
+    Execute arbitrary bash commands:
+    - Access project info via $WHIP_PROJECT_NAME and $WHIP_PROJECT_DIR
+    - Commands run in project directory (already cd'd)
+    - Quote commands with special characters
 
 EOF
 }
@@ -692,19 +901,35 @@ main() {
         mono|monorepo)
             if [[ $# -eq 0 ]]; then
                 log_error "Monorepo subcommand required"
+                show_mono_help
                 exit 1
             fi
             local subcommand="$1"
             shift
             case "$subcommand" in
+                help|--help|-h)
+                    show_mono_help
+                    ;;
                 list)
                     find_arty_projects "${1:-.}" "${2:-*}"
                     ;;
                 version|bump|status)
                     monorepo_batch "$subcommand" "${1:-.}" "${2:-*}" "${3:-}"
                     ;;
+                exec)
+                    if [[ $# -eq 0 ]]; then
+                        log_error "Command required for exec"
+                        echo "Usage: whip mono exec <command> [root] [pattern]"
+                        echo "Example: whip mono exec 'git status' . 'lib-*'"
+                        exit 1
+                    fi
+                    local cmd="$1"
+                    shift
+                    monorepo_exec "$cmd" "${1:-.}" "${2:-*}"
+                    ;;
                 *)
                     log_error "Unknown monorepo subcommand: $subcommand"
+                    echo "Run 'whip mono help' for detailed usage"
                     exit 1
                     ;;
             esac
