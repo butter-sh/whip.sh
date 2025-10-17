@@ -4,9 +4,9 @@ description: "Release cycle management for arty.sh projects"
 author: ""
 license: "MIT"
 
-# Dependencies
 references:
-  # No external dependencies required
+- https://github.com/butter-sh/leaf.sh.git
+- https://github.com/butter-sh/judge.sh.git
 
 # Entry point script
 main: "whip.sh"
