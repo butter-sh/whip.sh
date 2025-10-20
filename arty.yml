@@ -1,4 +1,4 @@
-name: "whip.sh"
+name: "@butter.sh/whip.sh"
 version: "1.0.0"
 description: "Release cycle management for arty.sh projects"
 author: "valknar@pivoine.art"
@@ -17,4 +17,4 @@ scripts:
   test/verbose: "arty exec judge run -v"
   test/ci: "TERM=linux arty exec judge run"
   format: "shfmt -l -w ./*.sh ./examples/*.sh ./__tests/*.sh"
-  docs: BASE_PATH=whip.sh arty exec leaf . -o ./docs
+  docs: BASE_PATH=whip.sh arty exec leaf . --logo ./icon.svg -o ./docs
