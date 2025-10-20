@@ -1,6 +1,22 @@
-# whip.sh
+<div align="center">
 
-Release cycle management for arty.sh projects with semantic versioning, changelog generation, git hooks, and monorepo support.
+# 🎯 whip.sh
+
+**Release Cycle Management for arty.sh Projects**
+
+[![Organization](https://img.shields.io/badge/org-butter--sh-4ade80?style=for-the-badge&logo=github&logoColor=white)](https://github.com/butter-sh)
+[![License](https://img.shields.io/badge/license-MIT-86efac?style=for-the-badge)](LICENSE)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/butter-sh/whip.sh/test.yml?branch=main&style=flat-square&logo=github)](https://github.com/butter-sh/whip.sh/actions)
+[![Version](https://img.shields.io/github/v/tag/butter-sh/whip.sh?style=flat-square&label=version&color=4ade80)](https://github.com/butter-sh/whip.sh/releases)
+[![butter.sh](https://img.shields.io/badge/butter.sh-whip-22c55e?style=flat-square&logo=data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMjEgMTZWOGEyIDIgMCAwIDAtMS0xLjczbC03LTRhMiAyIDAgMCAwLTIgMGwtNyA0QTIgMiAwIDAgMCAzIDh2OGEyIDIgMCAwIDAgMSAxLjczbDcgNGEyIDIgMCAwIDAgMiAwbDctNEEyIDIgMCAwIDAgMjEgMTZ6IiBzdHJva2U9IiM0YWRlODAiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBvbHlsaW5lIHBvaW50cz0iMy4yNyA2Ljk2IDEyIDEyLjAxIDIwLjczIDYuOTYiIHN0cm9rZT0iIzRhZGU4MCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48bGluZSB4MT0iMTIiIHkxPSIyMi4wOCIgeDI9IjEyIiB5Mj0iMTIiIHN0cm9rZT0iIzRhZGU4MCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48L3N2Zz4=)](https://butter-sh.github.io/whip.sh)
+
+*Semantic versioning, changelog generation, git hooks, and monorepo support*
+
+[Documentation](https://butter-sh.github.io/whip.sh) • [GitHub](https://github.com/butter-sh/whip.sh) • [butter.sh](https://github.com/butter-sh)
+
+</div>
+
+---
 
 ## Features
 
@@ -16,18 +32,46 @@ Release cycle management for arty.sh projects with semantic versioning, changelo
 ### Using hammer.sh
 
 ```bash
-hammer.sh whip my-project
+hammer whip my-project
 cd my-project
 bash setup.sh
+```
+
+### Using arty.sh
+
+```bash
+# Add to your arty.yml
+references:
+  - https://github.com/butter-sh/whip.sh.git
+
+# Install dependencies
+arty deps
+
+# Use via arty
+arty exec whip release
+```
+
+### Quick Install (curl)
+
+```bash
+curl -sSL https://raw.githubusercontent.com/butter-sh/whip.sh/main/whip.sh | sudo tee /usr/local/bin/whip > /dev/null
+sudo chmod +x /usr/local/bin/whip
 ```
 
 ### Manual Installation
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/butter-sh/whip.sh.git
 cd whip.sh
 chmod +x whip.sh
 ```
+
+## Dependencies
+
+- bash 4.0+
+- git
+- yq (YAML processor) - [Installation](https://github.com/mikefarah/yq)
+- shellcheck (optional, for pre-commit hooks)
 
 ## Quick Start
 
@@ -259,17 +303,85 @@ git commit -m "feat: add new feature"
 # [✓] All projects processed successfully
 ```
 
-## Requirements
+### Complete Project Setup
 
-- bash 4.0+
-- git
-- yq (YAML processor) - [Installation](https://github.com/mikefarah/yq)
-- shellcheck (optional, for pre-commit hooks)
+```bash
+# Generate project with hammer.sh
+hammer arty my-library
+
+# Add whip.sh for release management
+cd my-library
+arty install https://github.com/butter-sh/whip.sh.git
+
+# Configure scripts in arty.yml
+cat >> arty.yml << 'EOF'
+scripts:
+  release: "arty exec whip release"
+  release-major: "arty exec whip release major"
+  release-minor: "arty exec whip release minor"
+EOF
+
+# Install hooks
+arty exec whip hooks install
+
+# Make changes and release
+git add .
+git commit -m "feat: initial implementation"
+arty release
+```
+
+## Integration with butter.sh
+
+whip.sh works seamlessly with other butter.sh tools:
+
+```bash
+# Generate project with hammer.sh
+hammer arty my-lib
+
+# Add testing with judge.sh
+cd my-lib
+arty install https://github.com/butter-sh/judge.sh.git
+
+# Add release management with whip.sh
+arty install https://github.com/butter-sh/whip.sh.git
+
+# Add documentation with leaf.sh
+arty install https://github.com/butter-sh/leaf.sh.git
+
+# Complete workflow
+arty exec judge run           # Run tests
+arty exec leaf .              # Generate docs
+arty exec whip release minor  # Create release
+```
+
+## Related Projects
+
+Part of the butter.sh ecosystem:
+
+- **[arty.sh](https://github.com/butter-sh/arty.sh)** - Bash library dependency manager
+- **[hammer.sh](https://github.com/butter-sh/hammer.sh)** - Project generator from templates
+- **[judge.sh](https://github.com/butter-sh/judge.sh)** - Testing framework with assertions
+- **[leaf.sh](https://github.com/butter-sh/leaf.sh)** - Documentation generator
+- **[myst.sh](https://github.com/butter-sh/myst.sh)** - Templating engine
 
 ## License
 
-MIT
+MIT License - see [LICENSE](LICENSE) file for details
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## Author
 
-{{author}}
+Created by [valknar](https://github.com/valknarogg)
+
+---
+
+<div align="center">
+
+Part of the [butter.sh](https://github.com/butter-sh) ecosystem
+
+**Unlimited. Independent. Fresh.**
+
+</div>
