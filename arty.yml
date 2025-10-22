@@ -1,4 +1,4 @@
-name: "@butter.sh/whip.sh"
+name: "whip.sh"
 version: "1.0.0"
 description: "Release cycle management for arty.sh projects"
 author: "valknar@pivoine.art"

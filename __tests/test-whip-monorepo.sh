@@ -37,7 +37,7 @@ EOF
   mkdir -p app-main
   cat >app-main/arty.yml <<'EOF'
 name: "app-main"
-version: "2.0.0"
+version: "1.0.0"
 EOF
 
   mkdir -p tools/helper

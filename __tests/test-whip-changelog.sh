@@ -143,7 +143,7 @@ test_update_changelog_file_append() {
 
   cat >"$TEST_ENV_DIR/arty.yml" <<'EOF'
 name: "test-project"
-version: "2.0.0"
+version: "1.0.0"
 EOF
 
   # Create initial changelog

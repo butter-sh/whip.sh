@@ -121,7 +121,7 @@ test_config_flag() {
 
   cat >"$TEST_ENV_DIR/custom.yml" <<'EOF'
 name: "test-project"
-version: "2.0.0"
+version: "1.0.0"
 EOF
 
   output=$(bash "$WHIP_SH" --config "$TEST_ENV_DIR/custom.yml" version 2>&1)

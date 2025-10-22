@@ -320,7 +320,7 @@ test_release_custom_config() {
 
   cat >"$TEST_ENV_DIR/custom.yml" <<'EOF'
 name: "test-project"
-version: "2.0.0"
+version: "1.0.0"
 EOF
 
   git add custom.yml
