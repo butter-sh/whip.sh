@@ -265,8 +265,8 @@ test_changelog_multiline_commits() {
   git add file1.txt
   git commit -m "feat: add feature
 
-This is a detailed description
-that spans multiple lines" -q
+  This is a detailed description
+  that spans multiple lines" -q
 
   cat >"$TEST_ENV_DIR/arty.yml" <<'EOF'
 name: "test-project"

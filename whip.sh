@@ -17,7 +17,7 @@ if [[ "$FORCE_COLOR" = "0" ]]; then
   export MAGENTA=''
   export BOLD=''
   export NC=''
-else
+  else
   export RED='\033[0;31m'
   export GREEN='\033[0;32m'
   export YELLOW='\033[1;33m'
@@ -86,7 +86,7 @@ get_current_version() {
   local version=$(yq eval '.version' "$config" 2>/dev/null)
   if [[ -z "$version" ]] || [[ "$version" == "null" ]]; then
     echo "0.0.0"
-  else
+    else
     echo "$version"
   fi
 }
@@ -120,7 +120,7 @@ parse_version() {
     minor_ref="${BASH_REMATCH[2]}"
     patch_ref="${BASH_REMATCH[3]}"
     return 0
-  else
+    else
     return 1
   fi
 }
@@ -140,25 +140,25 @@ bump_version() {
 
   case "$bump_type" in
   major)
-    major=$((major + 1))
-    minor=0
-    patch=0
-    ;;
+  major=$((major + 1))
+  minor=0
+  patch=0
+  ;;
   minor)
-    minor=$((minor + 1))
-    patch=0
-    ;;
+  minor=$((minor + 1))
+  patch=0
+  ;;
   patch)
-    patch=$((patch + 1))
-    ;;
+  patch=$((patch + 1))
+  ;;
   *)
-    log_error "Invalid bump type: $bump_type (use major, minor, or patch)"
-    return 1
-    ;;
-  esac
+  log_error "Invalid bump type: $bump_type (use major, minor, or patch)"
+  return 1
+  ;;
+esac
 
-  local new_version="${major}.${minor}.${patch}"
-  echo "$new_version"
+local new_version="${major}.${minor}.${patch}"
+echo "$new_version"
 }
 
 # Generate changelog from git commits
@@ -171,7 +171,7 @@ generate_changelog() {
   if [[ -z "$from_tag" ]]; then
     # Get all commits if no from_tag
     range="$to_ref"
-  else
+    else
     range="${from_tag}..${to_ref}"
   fi
 
@@ -205,7 +205,7 @@ update_changelog_file() {
 
     if [[ -n "$previous_tag" ]]; then
       git log "${previous_tag}..HEAD" --pretty=format:"- %s" --reverse
-    else
+      else
       echo "- Initial release"
     fi
     echo ""
@@ -335,7 +335,7 @@ install_hooks() {
 
   if [[ $installed -eq 0 ]]; then
     log_warn "No hooks found in $hooks_source_dir"
-  else
+    else
     log_success "Installed $installed hook(s)"
   fi
 }
@@ -428,7 +428,7 @@ uninstall_hooks() {
 
   if [[ $removed -eq 0 ]]; then
     log_info "No hooks to remove"
-  else
+    else
     log_success "Removed $removed hook(s)"
   fi
 }
@@ -438,15 +438,15 @@ find_arty_projects() {
   local root_dir="${1:-.}"
   local pattern="${2:-*}"
 
-  find "$root_dir" -maxdepth 2 -type f -name "arty.yml" | while read -r config; do
-    local project_dir=$(dirname "$config")
-    local project_name=$(basename "$project_dir")
+find "$root_dir" -maxdepth 2 -type f -name "arty.yml" | while read -r config; do
+  local project_dir=$(dirname "$config")
+  local project_name=$(basename "$project_dir")
 
     # Apply glob pattern filter
-    if [[ "$project_name" == $pattern ]]; then
-      echo "$project_dir"
-    fi
-  done
+  if [[ "$project_name" == $pattern ]]; then
+    echo "$project_dir"
+  fi
+done
 }
 
 # Execute bash command on monorepo projects
@@ -483,13 +483,13 @@ monorepo_exec() {
 
     (
       # Export variables for use in command
-      export WHIP_PROJECT_DIR="$project_dir"
-      export WHIP_PROJECT_NAME="$project_name"
+    export WHIP_PROJECT_DIR="$project_dir"
+    export WHIP_PROJECT_NAME="$project_name"
 
-      cd "$project_dir" || exit 1
+    cd "$project_dir" || exit 1
 
       # Execute the bash command
-      eval "$bash_cmd"
+    eval "$bash_cmd"
     ) || {
       log_error "Failed for $project_name"
       failed=$((failed + 1))
@@ -501,7 +501,7 @@ monorepo_exec() {
   if [[ $failed -gt 0 ]]; then
     log_warn "$failed project(s) failed"
     return 1
-  else
+    else
     log_success "All projects processed successfully"
   fi
 }
@@ -533,45 +533,45 @@ monorepo_batch() {
     echo -e "${CYAN}━━━ Processing: $project_name ━━━${NC}"
 
     (
-      cd "$project_dir"
+    cd "$project_dir"
 
-      case "$command" in
-      version)
-        local version=$(get_current_version)
-        echo "Version: $version"
-        ;;
-      bump)
-        local bump_type="${4:-patch}"
-        local new_version=$(bump_version "$bump_type")
-        update_version "$new_version"
-        echo "Bumped to: $new_version"
-        ;;
-      status)
-        if git rev-parse --git-dir >/dev/null 2>&1; then
-          git status --short
-        else
-          echo "Not a git repository"
-        fi
-        ;;
-      *)
-        log_error "Unknown command: $command"
-        return 1
-        ;;
-      esac
-    ) || {
-      log_error "Failed for $project_name"
-      failed=$((failed + 1))
-    }
-
-    echo
-  done
-
-  if [[ $failed -gt 0 ]]; then
-    log_warn "$failed project(s) failed"
+    case "$command" in
+    version)
+    local version=$(get_current_version)
+    echo "Version: $version"
+    ;;
+    bump)
+    local bump_type="${4:-patch}"
+    local new_version=$(bump_version "$bump_type")
+    update_version "$new_version"
+    echo "Bumped to: $new_version"
+    ;;
+    status)
+    if git rev-parse --git-dir >/dev/null 2>&1; then
+      git status --short
+      else
+      echo "Not a git repository"
+    fi
+    ;;
+    *)
+    log_error "Unknown command: $command"
     return 1
+    ;;
+  esac
+  ) || {
+    log_error "Failed for $project_name"
+    failed=$((failed + 1))
+  }
+
+  echo
+done
+
+if [[ $failed -gt 0 ]]; then
+  log_warn "$failed project(s) failed"
+  return 1
   else
-    log_success "All projects processed successfully"
-  fi
+  log_success "All projects processed successfully"
+fi
 }
 
 # Show comprehensive mono help
@@ -831,129 +831,129 @@ main() {
   while [[ $# -gt 0 ]]; do
     case $1 in
     --no-push)
-      push=false
-      shift
-      ;;
+    push=false
+    shift
+    ;;
     --config)
-      config="$2"
-      WHIP_CONFIG="$config"
-      shift 2
-      ;;
+    config="$2"
+    WHIP_CONFIG="$config"
+    shift 2
+    ;;
     --changelog)
-      changelog="$2"
-      WHIP_CHANGELOG="$changelog"
-      shift 2
-      ;;
+    changelog="$2"
+    WHIP_CHANGELOG="$changelog"
+    shift 2
+    ;;
     -h | --help)
-      show_usage
-      exit 0
-      ;;
-    *)
-      break
-      ;;
-    esac
-  done
-
-  if [[ $# -eq 0 ]]; then
     show_usage
     exit 0
-  fi
-
-  local command="$1"
-  shift
-
-  case "$command" in
-  release)
-    local bump_type="${1:-patch}"
-    release "$bump_type" "$config" "$push"
     ;;
-  version)
-    get_current_version "$config"
-    ;;
-  bump)
-    if [[ $# -eq 0 ]]; then
-      log_error "Bump type required (major, minor, or patch)"
-      exit 1
-    fi
-    local new_version=$(bump_version "$1" "$config")
-    update_version "$new_version" "$config"
-    echo "$new_version"
-    ;;
-  changelog)
-    generate_changelog "${1:-}" "${2:-HEAD}"
-    ;;
-  tag)
-    if [[ $# -eq 0 ]]; then
-      log_error "Version required"
-      exit 1
-    fi
-    create_release_tag "$1" "${2:-Release version $1}" "$push"
-    ;;
-  hooks)
-    if [[ $# -eq 0 ]]; then
-      log_error "Hooks subcommand required (install, uninstall, create)"
-      exit 1
-    fi
-    local subcommand="$1"
-    shift
-    case "$subcommand" in
-    install)
-      install_hooks "${1:-$WHIP_HOOKS_DIR}"
-      ;;
-    uninstall)
-      uninstall_hooks
-      ;;
-    create)
-      create_default_hooks "${1:-$WHIP_HOOKS_DIR}"
-      ;;
     *)
-      log_error "Unknown hooks subcommand: $subcommand"
-      exit 1
-      ;;
-    esac
-    ;;
-  mono | monorepo)
-    if [[ $# -eq 0 ]]; then
-      log_error "Monorepo subcommand required"
-      show_mono_help
-      exit 1
-    fi
-    local subcommand="$1"
-    shift
-    case "$subcommand" in
-    help | --help | -h)
-      show_mono_help
-      ;;
-    list)
-      find_arty_projects "${1:-.}" "${2:-*}"
-      ;;
-    version | bump | status)
-      monorepo_batch "$subcommand" "${1:-.}" "${2:-*}" "${3:-}"
-      ;;
-    exec)
-      if [[ $# -eq 0 ]]; then
-        log_error "Command required for exec"
-        echo "Usage: whip mono exec <command> [root] [pattern]"
-        echo "Example: whip mono exec 'git status' . 'lib-*'"
-        exit 1
-      fi
-      local cmd="$1"
-      shift
-      monorepo_exec "$cmd" "${1:-.}" "${2:-*}"
-      ;;
-    *)
-      log_error "Unknown monorepo subcommand: $subcommand"
-      echo "Run 'whip mono help' for detailed usage"
-      exit 1
-      ;;
-    esac
-    ;;
-  *)
-    log_error "Unknown command: $command"
-    show_usage
-    exit 1
+    break
     ;;
   esac
+done
+
+if [[ $# -eq 0 ]]; then
+  show_usage
+  exit 0
+fi
+
+local command="$1"
+shift
+
+case "$command" in
+release)
+local bump_type="${1:-patch}"
+release "$bump_type" "$config" "$push"
+;;
+version)
+get_current_version "$config"
+;;
+bump)
+if [[ $# -eq 0 ]]; then
+  log_error "Bump type required (major, minor, or patch)"
+  exit 1
+fi
+local new_version=$(bump_version "$1" "$config")
+update_version "$new_version" "$config"
+echo "$new_version"
+;;
+changelog)
+generate_changelog "${1:-}" "${2:-HEAD}"
+;;
+tag)
+if [[ $# -eq 0 ]]; then
+  log_error "Version required"
+  exit 1
+fi
+create_release_tag "$1" "${2:-Release version $1}" "$push"
+;;
+hooks)
+if [[ $# -eq 0 ]]; then
+  log_error "Hooks subcommand required (install, uninstall, create)"
+  exit 1
+fi
+local subcommand="$1"
+shift
+case "$subcommand" in
+install)
+install_hooks "${1:-$WHIP_HOOKS_DIR}"
+;;
+uninstall)
+uninstall_hooks
+;;
+create)
+create_default_hooks "${1:-$WHIP_HOOKS_DIR}"
+;;
+*)
+log_error "Unknown hooks subcommand: $subcommand"
+exit 1
+;;
+esac
+;;
+mono | monorepo)
+if [[ $# -eq 0 ]]; then
+  log_error "Monorepo subcommand required"
+  show_mono_help
+  exit 1
+fi
+local subcommand="$1"
+shift
+case "$subcommand" in
+help | --help | -h)
+show_mono_help
+;;
+list)
+find_arty_projects "${1:-.}" "${2:-*}"
+;;
+version | bump | status)
+monorepo_batch "$subcommand" "${1:-.}" "${2:-*}" "${3:-}"
+;;
+exec)
+if [[ $# -eq 0 ]]; then
+  log_error "Command required for exec"
+  echo "Usage: whip mono exec <command> [root] [pattern]"
+  echo "Example: whip mono exec 'git status' . 'lib-*'"
+  exit 1
+fi
+local cmd="$1"
+shift
+monorepo_exec "$cmd" "${1:-.}" "${2:-*}"
+;;
+*)
+log_error "Unknown monorepo subcommand: $subcommand"
+echo "Run 'whip mono help' for detailed usage"
+exit 1
+;;
+esac
+;;
+*)
+log_error "Unknown command: $command"
+show_usage
+exit 1
+;;
+esac
 }
 
 # Run main if executed directly

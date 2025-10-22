@@ -262,7 +262,8 @@ test_mono_exec_complex() {
   create_monorepo
 
   set +e
-  output=$(bash "$WHIP_SH" mono exec 'echo "$WHIP_PROJECT_NAME" > output.txt && cat output.txt' 2>&1)
+  output=$(bash "$WHIP_SH" mono exec 'echo "$WHIP_PROJECT_NAME" > output.txt  && \
+  cat output.txt' 2>&1)
   set -e
 
   # Each project should have created output.txt
@@ -333,10 +334,10 @@ test_mono_exec_multiline() {
 
   set +e
   output=$(bash "$WHIP_SH" mono exec '
-        echo "Line 1"
-        echo "Line 2"
-        echo "$WHIP_PROJECT_NAME"
-    ' 2>&1)
+  echo "Line 1"
+  echo "Line 2"
+  echo "$WHIP_PROJECT_NAME"
+  ' 2>&1)
   set -e
 
   assert_contains "$output" "Line 1" "Should execute line 1"

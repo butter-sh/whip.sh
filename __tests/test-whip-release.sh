@@ -147,7 +147,8 @@ EOF
   echo "uncommitted" >uncommitted.txt
 
   # Simulate user declining
-  output=$(echo "n" | bash "$WHIP_SH" --config "$TEST_ENV_DIR/arty.yml" --no-push release 2>&1 || true)
+  output=$(echo "n" | bash "$WHIP_SH" --config "$TEST_ENV_DIR/arty.yml" --no-push release 2>&1 |  \
+  | true)
 
   assert_contains "$output" "uncommitted changes" "Should warn about changes"
   assert_contains "$output" "cancelled" "Should show cancellation"
@@ -271,12 +272,12 @@ EOF
   bash "$WHIP_SH" --config "$TEST_ENV_DIR/arty.yml" --no-push release 2>&1 >/dev/null
 
   # Check that both files were in the release commit
-  files=$(git show --name-only --format="" HEAD)
+files=$(git show --name-only --format="" HEAD)
 
-  assert_contains "$files" "arty.yml" "Should commit arty.yml"
-  assert_contains "$files" "CHANGELOG.md" "Should commit CHANGELOG.md"
+assert_contains "$files" "arty.yml" "Should commit arty.yml"
+assert_contains "$files" "CHANGELOG.md" "Should commit CHANGELOG.md"
 
-  teardown
+teardown
 }
 
 # Test: consecutive releases work correctly
