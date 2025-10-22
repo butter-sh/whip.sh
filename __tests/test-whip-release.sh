@@ -147,7 +147,7 @@ EOF
   echo "uncommitted" >uncommitted.txt
 
   # Simulate user declining
-  output=$(echo "n" | bash "$WHIP_SH" --config "$TEST_ENV_DIR/arty.yml" --no-push release 2>&1 | true)
+  output=$(echo "n" | bash "$WHIP_SH" --config "$TEST_ENV_DIR/arty.yml" --no-push release 2>&1)
 
   assert_contains "$output" "uncommitted changes" "Should warn about changes"
   assert_contains "$output" "cancelled" "Should show cancellation"
