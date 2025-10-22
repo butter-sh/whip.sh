@@ -1,16 +1,17 @@
 <div align="center">
 
+<img src="./icon.svg" width="100" height="100" alt="whip.sh">
+
 # whip.sh
 
-**Release Cycle Management for arty.sh Projects**
+**Release Automation Tool**
 
 [![Organization](https://img.shields.io/badge/org-butter--sh-4ade80?style=for-the-badge&logo=github&logoColor=white)](https://github.com/butter-sh)
 [![License](https://img.shields.io/badge/license-MIT-86efac?style=for-the-badge)](LICENSE)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/butter-sh/whip.sh/test.yml?branch=main&style=flat-square&logo=github&color=22c55e)](https://github.com/butter-sh/whip.sh/actions)
-[![Version](https://img.shields.io/github/v/tag/butter-sh/whip.sh?style=flat-square&label=version&color=4ade80)](https://github.com/butter-sh/whip.sh/releases)
-[![butter.sh](https://img.shields.io/badge/butter.sh-whip-22c55e?style=flat-square&logo=data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMjEgMTZWOGEyIDIgMCAwIDAtMS0xLjczbC03LTRhMiAyIDAgMCAwLTIgMGwtNyA0QTIgMiAwIDAgMCAzIDh2OGEyIDIgMCAwIDAgMSAxLjczbDcgNGEyIDIgMCAwIDAgMiAwbDctNEEyIDIgMCAwIDAgMjEgMTZ6IiBzdHJva2U9IiM0YWRlODAiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+PHBvbHlsaW5lIHBvaW50cz0iMy4yNyA2Ljk2IDEyIDEyLjAxIDIwLjczIDYuOTYiIHN0cm9rZT0iIzRhZGU4MCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48bGluZSB4MT0iMTIiIHkxPSIyMi4wOCIgeDI9IjEyIiB5Mj0iMTIiIHN0cm9rZT0iIzRhZGU4MCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48L3N2Zz4=)](https://butter-sh.github.io/whip.sh)
+[![Version](https://img.shields.io/badge/version-1.0.0-22c55e?style=for-the-badge)](https://github.com/butter-sh/whip.sh/releases)
+[![butter.sh](https://img.shields.io/badge/butter.sh-whip-4ade80?style=for-the-badge)](https://butter-sh.github.io)
 
-*Semantic versioning, changelog generation, git hooks, and monorepo support*
+*Streamlined release management with semantic versioning, automated changelogs, and git workflow integration*
 
 [Documentation](https://butter-sh.github.io/whip.sh) • [GitHub](https://github.com/butter-sh/whip.sh) • [butter.sh](https://github.com/butter-sh)
 
@@ -18,44 +19,28 @@
 
 ---
 
-## Features
+## Overview
 
-- **Semantic Versioning**: Automatic version bumping (major, minor, patch)
-- **Changelog Generation**: Create changelogs from git commit history
-- **Git Tag Management**: Create and push annotated git tags
-- **Commit Hooks**: Install pluggable git hooks with bash validation
-- **Monorepo Support**: Batch operations on multiple arty.yml projects
-- **arty.yml Integration**: Seamlessly integrates with arty.sh ecosystem
+whip.sh is a professional release management tool that automates version bumping, changelog generation, and git tagging for bash projects. With semantic versioning support and monorepo capabilities, it streamlines the entire release workflow.
+
+### Key Features
+
+- **Semantic Versioning** — Automatic version bumping (patch, minor, major)
+- **Automated Changelogs** — Generate CHANGELOG.md from git commit history
+- **Git Tag Creation** — Annotated tags with release metadata
+- **Monorepo Support** — Manage releases across multiple projects
+- **Git Hooks** — Pre-commit and pre-push validation
+- **arty.yml Integration** — Reads and updates project configuration
+
+---
 
 ## Installation
-
-### Using hammer.sh
-
-```bash
-hammer whip my-project
-cd my-project
-bash setup.sh
-```
 
 ### Using arty.sh
 
 ```bash
-# Add to your arty.yml
-references:
-  - https://github.com/butter-sh/whip.sh.git
-
-# Install dependencies
-arty deps
-
-# Use via arty
-arty exec whip release
-```
-
-### Quick Install (curl)
-
-```bash
-curl -sSL https://raw.githubusercontent.com/butter-sh/whip.sh/main/whip.sh | sudo tee /usr/local/bin/whip > /dev/null
-sudo chmod +x /usr/local/bin/whip
+arty install https://github.com/butter-sh/whip.sh.git
+arty exec whip --help
 ```
 
 ### Manual Installation
@@ -63,325 +48,334 @@ sudo chmod +x /usr/local/bin/whip
 ```bash
 git clone https://github.com/butter-sh/whip.sh.git
 cd whip.sh
-chmod +x whip.sh
+sudo cp whip.sh /usr/local/bin/whip
+sudo chmod +x /usr/local/bin/whip
 ```
 
-## Dependencies
-
-- bash 4.0+
-- git
-- yq (YAML processor) - [Installation](https://github.com/mikefarah/yq)
-- shellcheck (optional, for pre-commit hooks)
-
-## Quick Start
-
-```bash
-# Initialize (if in existing project)
-# Just ensure you have an arty.yml file
-
-# Install commit hooks for code quality
-./whip.sh hooks install
-
-# Create a patch release (bumps 1.0.0 -> 1.0.1)
-./whip.sh release
-
-# Create a minor release (bumps 1.0.0 -> 1.1.0)
-./whip.sh release minor
-
-# Create a major release (bumps 1.0.0 -> 2.0.0)
-./whip.sh release major
-```
+---
 
 ## Usage
 
-### Release Commands
-
-Create a full release with version bump, changelog update, and git tag:
+### Version Bumping
 
 ```bash
-# Patch release (default)
-./whip.sh release
+# Bump patch version (1.0.0 -> 1.0.1)
+whip bump patch
 
-# Minor release
-./whip.sh release minor
+# Bump minor version (1.0.1 -> 1.1.0)
+whip bump minor
 
-# Major release
-./whip.sh release major
+# Bump major version (1.1.0 -> 2.0.0)
+whip bump major
 
-# Release without pushing
-./whip.sh release --no-push
+# Preview without committing
+whip bump patch --dry-run
 ```
 
-The release process:
-1. Bumps version in arty.yml according to semver
-2. Generates/updates CHANGELOG.md from git commits
-3. Creates a git commit with version changes
-4. Creates an annotated git tag (e.g., v1.2.3)
-5. Pushes commits and tags to remote
-
-### Version Management
+### Changelog Generation
 
 ```bash
-# Show current version
-./whip.sh version
+# Generate CHANGELOG.md from git history
+whip changelog
 
-# Bump version without release
-./whip.sh bump patch
-./whip.sh bump minor
-./whip.sh bump major
+# Generate for specific version
+whip changelog --version 1.2.0
+
+# Update existing changelog
+whip changelog --update
 ```
 
-### Changelog
+### Git Tags
 
 ```bash
-# Generate changelog from all commits
-./whip.sh changelog
+# Create annotated tag for current version
+whip tag
 
-# Generate changelog from specific tag
-./whip.sh changelog v1.0.0
+# Create tag with custom message
+whip tag --message "Release v1.0.0"
 
-# Generate changelog for range
-./whip.sh changelog v1.0.0 HEAD
+# List all release tags
+whip tag --list
+```
+
+### Monorepo Management
+
+```bash
+# Bump version in all projects
+whip mono bump patch
+
+# Generate changelogs for all projects
+whip mono changelog
+
+# Tag all projects
+whip mono tag
 ```
 
 ### Git Hooks
 
-Install commit hooks for automatic code validation:
+```bash
+# Install git hooks
+whip hooks install
+
+# Uninstall git hooks
+whip hooks uninstall
+
+# Show hook status
+whip hooks status
+```
+
+---
+
+## Semantic Versioning
+
+whip.sh follows [Semantic Versioning 2.0.0](https://semver.org/):
+
+- **MAJOR** — Incompatible API changes
+- **MINOR** — Backward-compatible functionality
+- **PATCH** — Backward-compatible bug fixes
+
+### Version Format
+
+```
+MAJOR.MINOR.PATCH
+  ↓     ↓     ↓
+  1  .  2  .  3
+```
+
+### Bump Rules
 
 ```bash
-# Install hooks
-./whip.sh hooks install
+# 1.0.0 -> 1.0.1 (bug fixes)
+whip bump patch
 
-# Uninstall hooks
-./whip.sh hooks uninstall
+# 1.0.1 -> 1.1.0 (new features)
+whip bump minor
 
-# Create custom hooks template
-./whip.sh hooks create
+# 1.1.0 -> 2.0.0 (breaking changes)
+whip bump major
 ```
 
-Built-in validations:
-- **Bash syntax check**: Uses `bash -n` to validate syntax
-- **ShellCheck**: Runs shellcheck if available (optional)
-- **Pluggable**: Add custom hooks to `.whip/hooks/`
+---
 
-### Monorepo Support
+## Changelog Generation
 
-Manage multiple arty.yml projects in a monorepo structure:
+Automatically generates CHANGELOG.md from git commit messages:
 
-```bash
-# List all arty.yml projects
-./whip.sh mono list
+### Commit Message Format
 
-# Show versions of all projects
-./whip.sh mono version
+Use conventional commits for automatic categorization:
 
-# Bump version for all projects
-./whip.sh mono bump patch
-
-# Filter by glob pattern
-./whip.sh mono version "lib-*"
-
-# Show git status for all projects
-./whip.sh mono status
+```
+feat: add new feature
+fix: resolve bug in component
+docs: update README
+refactor: improve code structure
+test: add unit tests
+chore: update dependencies
 ```
 
-Example monorepo structure:
-```
-monorepo/
-├── lib-core/
-│   └── arty.yml
-├── lib-utils/
-│   └── arty.yml
-└── app-main/
-    └── arty.yml
-```
+### Generated Changelog
 
-## Configuration
+```markdown
+# Changelog
 
-### Environment Variables
+All notable changes to this project will be documented in this file.
 
-- `WHIP_CONFIG`: Config file path (default: `arty.yml`)
-- `WHIP_CHANGELOG`: Changelog file path (default: `CHANGELOG.md`)
+## [1.2.0] - 2025-10-22
 
-### Custom Config
+### Features
+- add new authentication system
+- implement caching layer
 
-```bash
-# Use custom config file
-./whip.sh --config myconfig.yml release
+### Bug Fixes
+- resolve memory leak in parser
+- fix edge case in validation
 
-# Use custom changelog file
-./whip.sh --changelog HISTORY.md release
+### Documentation
+- update installation guide
+- add API reference
 ```
 
-## Integration with arty.sh
-
-whip.sh is designed to work seamlessly with arty.sh:
-
-```yaml
-# arty.yml
-name: "my-project"
-version: "1.0.0"
-description: "My awesome project"
-
-scripts:
-  release: "bash whip.sh release"
-  release-major: "bash whip.sh release major"
-  release-minor: "bash whip.sh release minor"
-```
-
-Then use via arty:
-
-```bash
-arty release        # Patch release
-arty release-major  # Major release
-arty release-minor  # Minor release
-```
-
-## Custom Hooks
-
-Create custom hooks in `.whip/hooks/`:
-
-```bash
-# Create hooks directory
-mkdir -p .whip/hooks
-
-# Add custom pre-commit hook
-cat > .whip/hooks/pre-commit << 'EOF'
-#!/usr/bin/env bash
-echo "Running custom checks..."
-# Your custom validation logic here
-EOF
-
-chmod +x .whip/hooks/pre-commit
-
-# Install hooks
-./whip.sh hooks install
-```
+---
 
 ## Examples
 
-### Simple Release Workflow
+### Example 1: Release Workflow
 
 ```bash
-# Make changes and commit
+# 1. Make changes and commit
 git add .
-git commit -m "feat: add new feature"
+git commit -m "feat: add awesome feature"
 
-# Create release
-./whip.sh release patch
+# 2. Generate changelog
+whip changelog
 
-# Output:
-# [INFO] Starting release process
-# [INFO] New version: 1.0.1
-# [✓] Updated version to 1.0.1 in arty.yml
-# [✓] Updated CHANGELOG.md
-# [✓] Committed version changes
-# [✓] Created tag: v1.0.1
-# [✓] Pushed tag: v1.0.1
-# [✓] Pushed commits
-# [✓] Release 1.0.1 completed successfully!
+# 3. Bump version
+whip bump minor  # 1.0.0 -> 1.1.0
+
+# 4. Create git tag
+whip tag
+
+# 5. Push to remote
+git push && git push --tags
 ```
 
-### Monorepo Batch Operations
+### Example 2: Monorepo Release
 
 ```bash
-# Bump all library projects
-./whip.sh mono bump minor "lib-*"
+# Release all projects
+whip mono bump patch
+whip mono changelog
+whip mono tag
 
-# Output:
-# [→] Scanning for arty.yml projects in .
-# [INFO] Found 2 project(s)
-#
-# ━━━ Processing: lib-core ━━━
-# [✓] Updated version to 1.1.0 in arty.yml
-# Bumped to: 1.1.0
-#
-# ━━━ Processing: lib-utils ━━━
-# [✓] Updated version to 1.1.0 in arty.yml
-# Bumped to: 1.1.0
-#
-# [✓] All projects processed successfully
+# Push everything
+git push && git push --tags
 ```
 
-### Complete Project Setup
+### Example 3: Pre-Release Version
 
 ```bash
-# Generate project with hammer.sh
-hammer arty my-library
+# Create pre-release
+whip bump minor --pre alpha  # 1.0.0 -> 1.1.0-alpha.0
 
-# Add whip.sh for release management
-cd my-library
-arty install https://github.com/butter-sh/whip.sh.git
+# Increment pre-release
+whip bump prerelease         # 1.1.0-alpha.0 -> 1.1.0-alpha.1
 
-# Configure scripts in arty.yml
-cat >> arty.yml << 'EOF'
+# Graduate to stable
+whip bump patch              # 1.1.0-alpha.1 -> 1.1.0
+```
+
+---
+
+## Integration with arty.sh
+
+Add whip.sh to your project:
+
+```yaml
+name: "my-project"
+version: "1.0.0"
+
+references:
+  - https://github.com/butter-sh/whip.sh.git
+
 scripts:
-  release: "arty exec whip release"
-  release-major: "arty exec whip release major"
-  release-minor: "arty exec whip release minor"
-EOF
-
-# Install hooks
-arty exec whip hooks install
-
-# Make changes and release
-git add .
-git commit -m "feat: initial implementation"
-arty release
+  release-patch: "arty exec whip bump patch && arty exec whip tag"
+  release-minor: "arty exec whip bump minor && arty exec whip tag"
+  release-major: "arty exec whip bump major && arty exec whip tag"
+  changelog: "arty exec whip changelog"
 ```
 
-## Integration with butter.sh
-
-whip.sh works seamlessly with other butter.sh tools:
+Then run:
 
 ```bash
-# Generate project with hammer.sh
-hammer arty my-lib
-
-# Add testing with judge.sh
-cd my-lib
-arty install https://github.com/butter-sh/judge.sh.git
-
-# Add release management with whip.sh
-arty install https://github.com/butter-sh/whip.sh.git
-
-# Add documentation with leaf.sh
-arty install https://github.com/butter-sh/leaf.sh.git
-
-# Complete workflow
-arty exec judge run           # Run tests
-arty exec leaf .              # Generate docs
-arty exec whip release minor  # Create release
+arty deps             # Install whip.sh
+arty release-patch    # Create patch release
+arty changelog        # Generate changelog
 ```
+
+---
+
+## Configuration
+
+Configure whip.sh in `arty.yml`:
+
+```yaml
+whip:
+  changelog:
+    sections:
+      feat: "Features"
+      fix: "Bug Fixes"
+      docs: "Documentation"
+      refactor: "Refactoring"
+      test: "Tests"
+      chore: "Chores"
+
+  tag:
+    prefix: "v"
+    message: "Release {{version}}"
+
+  hooks:
+    pre-commit:
+      - lint
+      - test
+    pre-push:
+      - test
+```
+
+---
+
+## Git Hooks
+
+whip.sh can install git hooks for quality control:
+
+### Pre-Commit Hook
+
+```bash
+#!/usr/bin/env bash
+# Runs before each commit
+
+# Lint code
+arty lint || exit 1
+
+# Run tests
+arty test || exit 1
+```
+
+### Pre-Push Hook
+
+```bash
+#!/usr/bin/env bash
+# Runs before pushing
+
+# Ensure version is tagged
+whip tag --verify || exit 1
+
+# Run full test suite
+arty test --integration || exit 1
+```
+
+### Installation
+
+```bash
+# Install hooks
+whip hooks install
+
+# Hooks are created in .git/hooks/
+# - pre-commit
+# - pre-push
+```
+
+---
 
 ## Related Projects
 
-Part of the butter.sh ecosystem:
+Part of the [butter.sh](https://github.com/butter-sh) ecosystem:
 
-- **[arty.sh](https://github.com/butter-sh/arty.sh)** - Bash library dependency manager
-- **[hammer.sh](https://github.com/butter-sh/hammer.sh)** - Project generator from templates
-- **[judge.sh](https://github.com/butter-sh/judge.sh)** - Testing framework with assertions
-- **[leaf.sh](https://github.com/butter-sh/leaf.sh)** - Documentation generator
-- **[myst.sh](https://github.com/butter-sh/myst.sh)** - Templating engine
+- **[arty.sh](https://github.com/butter-sh/arty.sh)** — Dependency manager
+- **[judge.sh](https://github.com/butter-sh/judge.sh)** — Testing framework
+- **[myst.sh](https://github.com/butter-sh/myst.sh)** — Templating engine
+- **[hammer.sh](https://github.com/butter-sh/hammer.sh)** — Project scaffolding
+- **[leaf.sh](https://github.com/butter-sh/leaf.sh)** — Documentation generator
+- **[clean.sh](https://github.com/butter-sh/clean.sh)** — Linter and formatter
+
+---
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) file for details
+MIT License — see [LICENSE](LICENSE) file for details.
 
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## Author
-
-Created by [valknar](https://github.com/valknarogg)
-
 ---
 
 <div align="center">
 
-Part of the [butter.sh](https://github.com/butter-sh) ecosystem
+**Part of the [butter.sh](https://github.com/butter-sh) ecosystem**
 
-**Unlimited. Independent. Fresh.**
+*Unlimited. Independent. Fresh.*
+
+Crafted by [Valknar](https://github.com/valknarogg)
 
 </div>
