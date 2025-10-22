@@ -8,7 +8,7 @@ set -euo pipefail
 
 # Colors for output - only use colors if output is to a terminal or if FORCE_COLOR is set
 export FORCE_COLOR=${FORCE_COLOR:-"1"}
-if [ "$FORCE_COLOR" = "0" ]; then
+if [[ "$FORCE_COLOR" = "0" ]]; then
   export RED=''
   export GREEN=''
   export YELLOW=''
@@ -35,319 +35,319 @@ WHIP_CHANGELOG="${WHIP_CHANGELOG:-CHANGELOG.md}"
 
 # Logging functions
 log_info() {
-    echo -e "${BLUE}[INFO]${NC} $1" >&2
+  echo -e "${BLUE}[INFO]${NC} $1" >&2
 }
 
 log_success() {
-    echo -e "${GREEN}[✓]${NC} $1" >&2
+  echo -e "${GREEN}[✓]${NC} $1" >&2
 }
 
 log_warn() {
-    echo -e "${YELLOW}[⚠]${NC} $1" >&2
+  echo -e "${YELLOW}[⚠]${NC} $1" >&2
 }
 
 log_error() {
-    echo -e "${RED}[✗]${NC} $1" >&2
+  echo -e "${RED}[✗]${NC} $1" >&2
 }
 
 log_step() {
-    echo -e "${CYAN}[→]${NC} $1" >&2
+  echo -e "${CYAN}[→]${NC} $1" >&2
 }
 
 # Check if yq is installed
 check_dependencies() {
-    local missing=0
-    
-    if ! command -v yq &> /dev/null; then
-        log_error "yq is not installed"
-        missing=1
-    fi
-    
-    if ! command -v git &> /dev/null; then
-        log_error "git is not installed"
-        missing=1
-    fi
-    
-    if [[ $missing -eq 1 ]]; then
-        log_error "Missing required dependencies"
-        exit 1
-    fi
+  local missing=0
+
+  if ! command -v yq &>/dev/null; then
+    log_error "yq is not installed"
+    missing=1
+  fi
+
+  if ! command -v git &>/dev/null; then
+    log_error "git is not installed"
+    missing=1
+  fi
+
+  if [[ $missing -eq 1 ]]; then
+    log_error "Missing required dependencies"
+    exit 1
+  fi
 }
 
 # Get current version from arty.yml
 get_current_version() {
-    local config="${1:-$WHIP_CONFIG}"
-    
-    if [[ ! -f "$config" ]]; then
-        echo "0.0.0"
-        return
-    fi
-    
-    local version=$(yq eval '.version' "$config" 2>/dev/null)
-    if [[ -z "$version" ]] || [[ "$version" == "null" ]]; then
-        echo "0.0.0"
-    else
-        echo "$version"
-    fi
+  local config="${1:-$WHIP_CONFIG}"
+
+  if [[ ! -f "$config" ]]; then
+    echo "0.0.0"
+    return
+  fi
+
+  local version=$(yq eval '.version' "$config" 2>/dev/null)
+  if [[ -z "$version" ]] || [[ "$version" == "null" ]]; then
+    echo "0.0.0"
+  else
+    echo "$version"
+  fi
 }
 
 # Update version in arty.yml
 update_version() {
-    local new_version="$1"
-    local config="${2:-$WHIP_CONFIG}"
-    
-    if [[ ! -f "$config" ]]; then
-        log_error "Config file not found: $config"
-        return 1
-    fi
-    
-    yq eval ".version = \"$new_version\"" -i "$config"
-    log_success "Updated version to $new_version in $config"
+  local new_version="$1"
+  local config="${2:-$WHIP_CONFIG}"
+
+  if [[ ! -f "$config" ]]; then
+    log_error "Config file not found: $config"
+    return 1
+  fi
+
+  yq eval ".version = \"$new_version\"" -i "$config"
+  log_success "Updated version to $new_version in $config"
 }
 
 # Parse semver components
 parse_version() {
-    local version="$1"
-    local -n major_ref=$2
-    local -n minor_ref=$3
-    local -n patch_ref=$4
-    
-    # Remove 'v' prefix if present
-    version="${version#v}"
-    
-    if [[ "$version" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
-        major_ref="${BASH_REMATCH[1]}"
-        minor_ref="${BASH_REMATCH[2]}"
-        patch_ref="${BASH_REMATCH[3]}"
-        return 0
-    else
-        return 1
-    fi
+  local version="$1"
+  local -n major_ref=$2
+  local -n minor_ref=$3
+  local -n patch_ref=$4
+
+  # Remove 'v' prefix if present
+  version="${version#v}"
+
+  if [[ "$version" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+    major_ref="${BASH_REMATCH[1]}"
+    minor_ref="${BASH_REMATCH[2]}"
+    patch_ref="${BASH_REMATCH[3]}"
+    return 0
+  else
+    return 1
+  fi
 }
 
 # Bump version (major, minor, or patch)
 bump_version() {
-    local bump_type="$1"
-    local config="${2:-$WHIP_CONFIG}"
-    
-    local current_version=$(get_current_version "$config")
-    local major minor patch
-    
-    if ! parse_version "$current_version" major minor patch; then
-        log_error "Invalid version format: $current_version"
-        return 1
-    fi
-    
-    case "$bump_type" in
-        major)
-            major=$((major + 1))
-            minor=0
-            patch=0
-            ;;
-        minor)
-            minor=$((minor + 1))
-            patch=0
-            ;;
-        patch)
-            patch=$((patch + 1))
-            ;;
-        *)
-            log_error "Invalid bump type: $bump_type (use major, minor, or patch)"
-            return 1
-            ;;
-    esac
-    
-    local new_version="${major}.${minor}.${patch}"
-    echo "$new_version"
+  local bump_type="$1"
+  local config="${2:-$WHIP_CONFIG}"
+
+  local current_version=$(get_current_version "$config")
+  local major minor patch
+
+  if ! parse_version "$current_version" major minor patch; then
+    log_error "Invalid version format: $current_version"
+    return 1
+  fi
+
+  case "$bump_type" in
+  major)
+    major=$((major + 1))
+    minor=0
+    patch=0
+    ;;
+  minor)
+    minor=$((minor + 1))
+    patch=0
+    ;;
+  patch)
+    patch=$((patch + 1))
+    ;;
+  *)
+    log_error "Invalid bump type: $bump_type (use major, minor, or patch)"
+    return 1
+    ;;
+  esac
+
+  local new_version="${major}.${minor}.${patch}"
+  echo "$new_version"
 }
 
 # Generate changelog from git commits
 generate_changelog() {
-    local from_tag="${1:-}"
-    local to_ref="${2:-HEAD}"
-    local title="${3:-Changelog}"
-    
-    local range
-    if [[ -z "$from_tag" ]]; then
-        # Get all commits if no from_tag
-        range="$to_ref"
-    else
-        range="${from_tag}..${to_ref}"
-    fi
-    
-    echo "# $title"
-    echo ""
-    echo "## Changes"
-    echo ""
-    
-    git log "$range" --pretty=format:"- %s (%h)" --reverse 2>/dev/null || {
-        echo "- Initial release"
-    }
-    echo ""
+  local from_tag="${1:-}"
+  local to_ref="${2:-HEAD}"
+  local title="${3:-Changelog}"
+
+  local range
+  if [[ -z "$from_tag" ]]; then
+    # Get all commits if no from_tag
+    range="$to_ref"
+  else
+    range="${from_tag}..${to_ref}"
+  fi
+
+  echo "# $title"
+  echo ""
+  echo "## Changes"
+  echo ""
+
+  git log "$range" --pretty=format:"- %s (%h)" --reverse 2>/dev/null || {
+    echo "- Initial release"
+  }
+  echo ""
 }
 
 # Update CHANGELOG.md file
 update_changelog_file() {
-    local new_version="$1"
-    local changelog_file="${2:-$WHIP_CHANGELOG}"
-    
-    local previous_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-    local date=$(date +%Y-%m-%d)
-    
-    local temp_file=$(mktemp)
-    
-    # Generate new version section
-    {
-        echo "# Changelog"
-        echo ""
-        echo "## [$new_version] - $date"
-        echo ""
-        
-        if [[ -n "$previous_tag" ]]; then
-            git log "${previous_tag}..HEAD" --pretty=format:"- %s" --reverse
-        else
-            echo "- Initial release"
-        fi
-        echo ""
-        echo ""
-        
-        # Append existing changelog if it exists
-        if [[ -f "$changelog_file" ]]; then
-            # Skip the first "# Changelog" line and empty lines
-            tail -n +2 "$changelog_file" | sed '/^$/d; 1s/^//'
-        fi
-    } > "$temp_file"
-    
-    mv "$temp_file" "$changelog_file"
-    log_success "Updated $changelog_file"
+  local new_version="$1"
+  local changelog_file="${2:-$WHIP_CHANGELOG}"
+
+  local previous_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+  local date=$(date +%Y-%m-%d)
+
+  local temp_file=$(mktemp)
+
+  # Generate new version section
+  {
+    echo "# Changelog"
+    echo ""
+    echo "## [$new_version] - $date"
+    echo ""
+
+    if [[ -n "$previous_tag" ]]; then
+      git log "${previous_tag}..HEAD" --pretty=format:"- %s" --reverse
+    else
+      echo "- Initial release"
+    fi
+    echo ""
+    echo ""
+
+    # Append existing changelog if it exists
+    if [[ -f "$changelog_file" ]]; then
+      # Skip the first "# Changelog" line and empty lines
+      tail -n +2 "$changelog_file" | sed '/^$/d; 1s/^//'
+    fi
+  } >"$temp_file"
+
+  mv "$temp_file" "$changelog_file"
+  log_success "Updated $changelog_file"
 }
 
 # Create and push git tag
 create_release_tag() {
-    local version="$1"
-    local message="${2:-Release version $version}"
-    local push="${3:-true}"
-    
-    local tag="v${version}"
-    
-    # Check if tag already exists
-    if git rev-parse "$tag" >/dev/null 2>&1; then
-        log_warn "Tag $tag already exists"
-        return 1
-    fi
-    
-    # Create annotated tag
-    git tag -a "$tag" -m "$message"
-    log_success "Created tag: $tag"
-    
-    # Push tag if requested
-    if [[ "$push" == "true" ]]; then
-        git push origin "$tag"
-        log_success "Pushed tag: $tag"
-    fi
+  local version="$1"
+  local message="${2:-Release version $version}"
+  local push="${3:-true}"
+
+  local tag="v${version}"
+
+  # Check if tag already exists
+  if git rev-parse "$tag" >/dev/null 2>&1; then
+    log_warn "Tag $tag already exists"
+    return 1
+  fi
+
+  # Create annotated tag
+  git tag -a "$tag" -m "$message"
+  log_success "Created tag: $tag"
+
+  # Push tag if requested
+  if [[ "$push" == "true" ]]; then
+    git push origin "$tag"
+    log_success "Pushed tag: $tag"
+  fi
 }
 
 # Full release workflow
 release() {
-    local bump_type="${1:-patch}"
-    local config="${2:-$WHIP_CONFIG}"
-    local push="${3:-true}"
-    
-    check_dependencies
-    
-    # Check if we're in a git repository
-    if ! git rev-parse --git-dir > /dev/null 2>&1; then
-        log_error "Not a git repository"
-        return 1
+  local bump_type="${1:-patch}"
+  local config="${2:-$WHIP_CONFIG}"
+  local push="${3:-true}"
+
+  check_dependencies
+
+  # Check if we're in a git repository
+  if ! git rev-parse --git-dir >/dev/null 2>&1; then
+    log_error "Not a git repository"
+    return 1
+  fi
+
+  # Check for uncommitted changes
+  if [[ -n $(git status --porcelain) ]]; then
+    log_warn "You have uncommitted changes"
+    read -p "Continue anyway? [y/N] " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+      log_info "Release cancelled"
+      return 1
     fi
-    
-    # Check for uncommitted changes
-    if [[ -n $(git status --porcelain) ]]; then
-        log_warn "You have uncommitted changes"
-        read -p "Continue anyway? [y/N] " -n 1 -r
-        echo
-        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-            log_info "Release cancelled"
-            return 1
-        fi
-    fi
-    
-    log_step "Starting release process"
-    
-    # Bump version
-    local new_version=$(bump_version "$bump_type" "$config")
-    log_info "New version: $new_version"
-    
-    # Update version in config
-    update_version "$new_version" "$config"
-    
-    # Update changelog
-    update_changelog_file "$new_version"
-    
-    # Commit changes
-    git add "$config" "$WHIP_CHANGELOG"
-    git commit -m "chore: release version $new_version"
-    log_success "Committed version changes"
-    
-    # Create and push tag
-    create_release_tag "$new_version" "Release version $new_version" "$push"
-    
-    # Push commits if requested
-    if [[ "$push" == "true" ]]; then
-        git push
-        log_success "Pushed commits"
-    fi
-    
-    log_success "Release $new_version completed successfully!"
+  fi
+
+  log_step "Starting release process"
+
+  # Bump version
+  local new_version=$(bump_version "$bump_type" "$config")
+  log_info "New version: $new_version"
+
+  # Update version in config
+  update_version "$new_version" "$config"
+
+  # Update changelog
+  update_changelog_file "$new_version"
+
+  # Commit changes
+  git add "$config" "$WHIP_CHANGELOG"
+  git commit -m "chore: release version $new_version"
+  log_success "Committed version changes"
+
+  # Create and push tag
+  create_release_tag "$new_version" "Release version $new_version" "$push"
+
+  # Push commits if requested
+  if [[ "$push" == "true" ]]; then
+    git push
+    log_success "Pushed commits"
+  fi
+
+  log_success "Release $new_version completed successfully!"
 }
 
 # Install git hooks
 install_hooks() {
-    local hooks_source_dir="${1:-$WHIP_HOOKS_DIR}"
-    local git_hooks_dir=".git/hooks"
-    
-    if [[ ! -d "$git_hooks_dir" ]]; then
-        log_error "Not a git repository"
-        return 1
+  local hooks_source_dir="${1:-$WHIP_HOOKS_DIR}"
+  local git_hooks_dir=".git/hooks"
+
+  if [[ ! -d "$git_hooks_dir" ]]; then
+    log_error "Not a git repository"
+    return 1
+  fi
+
+  if [[ ! -d "$hooks_source_dir" ]]; then
+    log_warn "Hooks directory not found: $hooks_source_dir"
+    log_info "Creating default hooks directory..."
+    mkdir -p "$hooks_source_dir"
+    create_default_hooks "$hooks_source_dir"
+  fi
+
+  log_step "Installing git hooks from $hooks_source_dir"
+
+  local installed=0
+  for hook_file in "$hooks_source_dir"/*; do
+    if [[ -f "$hook_file" ]]; then
+      local hook_name=$(basename "$hook_file")
+      local target="$git_hooks_dir/$hook_name"
+
+      cp "$hook_file" "$target"
+      chmod +x "$target"
+      log_success "Installed: $hook_name"
+      installed=$((installed + 1))
     fi
-    
-    if [[ ! -d "$hooks_source_dir" ]]; then
-        log_warn "Hooks directory not found: $hooks_source_dir"
-        log_info "Creating default hooks directory..."
-        mkdir -p "$hooks_source_dir"
-        create_default_hooks "$hooks_source_dir"
-    fi
-    
-    log_step "Installing git hooks from $hooks_source_dir"
-    
-    local installed=0
-    for hook_file in "$hooks_source_dir"/*; do
-        if [[ -f "$hook_file" ]]; then
-            local hook_name=$(basename "$hook_file")
-            local target="$git_hooks_dir/$hook_name"
-            
-            cp "$hook_file" "$target"
-            chmod +x "$target"
-            log_success "Installed: $hook_name"
-            installed=$((installed + 1))
-        fi
-    done
-    
-    if [[ $installed -eq 0 ]]; then
-        log_warn "No hooks found in $hooks_source_dir"
-    else
-        log_success "Installed $installed hook(s)"
-    fi
+  done
+
+  if [[ $installed -eq 0 ]]; then
+    log_warn "No hooks found in $hooks_source_dir"
+  else
+    log_success "Installed $installed hook(s)"
+  fi
 }
 
 # Create default hooks with validation
 create_default_hooks() {
-    local hooks_dir="$1"
-    
-    mkdir -p "$hooks_dir"
-    
-    # Pre-commit hook with shellcheck and bash -n validation
-    cat > "$hooks_dir/pre-commit" << 'EOF'
+  local hooks_dir="$1"
+
+  mkdir -p "$hooks_dir"
+
+  # Pre-commit hook with shellcheck and bash -n validation
+  cat >"$hooks_dir/pre-commit" <<'EOF'
 #!/usr/bin/env bash
 # Pre-commit hook: validates bash scripts
 
@@ -397,186 +397,186 @@ fi
 echo "Pre-commit checks passed!"
 exit 0
 EOF
-    
-    chmod +x "$hooks_dir/pre-commit"
-    log_success "Created default pre-commit hook"
+
+  chmod +x "$hooks_dir/pre-commit"
+  log_success "Created default pre-commit hook"
 }
 
 # Uninstall git hooks
 uninstall_hooks() {
-    local git_hooks_dir=".git/hooks"
-    
-    if [[ ! -d "$git_hooks_dir" ]]; then
-        log_error "Not a git repository"
-        return 1
+  local git_hooks_dir=".git/hooks"
+
+  if [[ ! -d "$git_hooks_dir" ]]; then
+    log_error "Not a git repository"
+    return 1
+  fi
+
+  log_step "Removing git hooks"
+
+  # Remove hooks that were installed by whip
+  local hooks=("pre-commit" "pre-push" "commit-msg")
+  local removed=0
+
+  for hook in "${hooks[@]}"; do
+    local hook_file="$git_hooks_dir/$hook"
+    if [[ -f "$hook_file" ]]; then
+      rm "$hook_file"
+      log_success "Removed: $hook"
+      removed=$((removed + 1))
     fi
-    
-    log_step "Removing git hooks"
-    
-    # Remove hooks that were installed by whip
-    local hooks=("pre-commit" "pre-push" "commit-msg")
-    local removed=0
-    
-    for hook in "${hooks[@]}"; do
-        local hook_file="$git_hooks_dir/$hook"
-        if [[ -f "$hook_file" ]]; then
-            rm "$hook_file"
-            log_success "Removed: $hook"
-            removed=$((removed + 1))
-        fi
-    done
-    
-    if [[ $removed -eq 0 ]]; then
-        log_info "No hooks to remove"
-    else
-        log_success "Removed $removed hook(s)"
-    fi
+  done
+
+  if [[ $removed -eq 0 ]]; then
+    log_info "No hooks to remove"
+  else
+    log_success "Removed $removed hook(s)"
+  fi
 }
 
 # Find arty.yml projects in subdirectories
 find_arty_projects() {
-    local root_dir="${1:-.}"
-    local pattern="${2:-*}"
-    
-    find "$root_dir" -maxdepth 2 -type f -name "arty.yml" | while read -r config; do
-        local project_dir=$(dirname "$config")
-        local project_name=$(basename "$project_dir")
-        
-        # Apply glob pattern filter
-        if [[ "$project_name" == $pattern ]]; then
-            echo "$project_dir"
-        fi
-    done
+  local root_dir="${1:-.}"
+  local pattern="${2:-*}"
+
+  find "$root_dir" -maxdepth 2 -type f -name "arty.yml" | while read -r config; do
+    local project_dir=$(dirname "$config")
+    local project_name=$(basename "$project_dir")
+
+    # Apply glob pattern filter
+    if [[ "$project_name" == $pattern ]]; then
+      echo "$project_dir"
+    fi
+  done
 }
 
 # Execute bash command on monorepo projects
 monorepo_exec() {
-    local bash_cmd="$1"
-    local root_dir="${2:-.}"
-    local pattern="${3:-*}"
-    
-    if [[ -z "$bash_cmd" ]]; then
-        log_error "Command required"
-        return 1
-    fi
-    
-    log_step "Scanning for arty.yml projects in $root_dir"
-    
-    local projects=()
-    while IFS= read -r project_dir; do
-        projects+=("$project_dir")
-    done < <(find_arty_projects "$root_dir" "$pattern")
-    
-    if [[ ${#projects[@]} -eq 0 ]]; then
-        log_warn "No arty.yml projects found matching pattern: $pattern"
-        return 1
-    fi
-    
-    log_info "Found ${#projects[@]} project(s)"
-    log_info "Executing: $bash_cmd"
+  local bash_cmd="$1"
+  local root_dir="${2:-.}"
+  local pattern="${3:-*}"
+
+  if [[ -z "$bash_cmd" ]]; then
+    log_error "Command required"
+    return 1
+  fi
+
+  log_step "Scanning for arty.yml projects in $root_dir"
+
+  local projects=()
+  while IFS= read -r project_dir; do
+    projects+=("$project_dir")
+  done < <(find_arty_projects "$root_dir" "$pattern")
+
+  if [[ ${#projects[@]} -eq 0 ]]; then
+    log_warn "No arty.yml projects found matching pattern: $pattern"
+    return 1
+  fi
+
+  log_info "Found ${#projects[@]} project(s)"
+  log_info "Executing: $bash_cmd"
+  echo
+
+  local failed=0
+  for project_dir in "${projects[@]}"; do
+    local project_name=$(basename "$project_dir")
+    echo -e "${CYAN}━━━ $project_name ━━━${NC}"
+
+    (
+      # Export variables for use in command
+      export WHIP_PROJECT_DIR="$project_dir"
+      export WHIP_PROJECT_NAME="$project_name"
+
+      cd "$project_dir" || exit 1
+
+      # Execute the bash command
+      eval "$bash_cmd"
+    ) || {
+      log_error "Failed for $project_name"
+      failed=$((failed + 1))
+    }
+
     echo
-    
-    local failed=0
-    for project_dir in "${projects[@]}"; do
-        local project_name=$(basename "$project_dir")
-        echo -e "${CYAN}━━━ $project_name ━━━${NC}"
-        
-        (
-            # Export variables for use in command
-            export WHIP_PROJECT_DIR="$project_dir"
-            export WHIP_PROJECT_NAME="$project_name"
-            
-            cd "$project_dir" || exit 1
-            
-            # Execute the bash command
-            eval "$bash_cmd"
-        ) || {
-            log_error "Failed for $project_name"
-            failed=$((failed + 1))
-        }
-        
-        echo
-    done
-    
-    if [[ $failed -gt 0 ]]; then
-        log_warn "$failed project(s) failed"
-        return 1
-    else
-        log_success "All projects processed successfully"
-    fi
+  done
+
+  if [[ $failed -gt 0 ]]; then
+    log_warn "$failed project(s) failed"
+    return 1
+  else
+    log_success "All projects processed successfully"
+  fi
 }
 
 # Batch operation on monorepo projects
 monorepo_batch() {
-    local command="$1"
-    local root_dir="${2:-.}"
-    local pattern="${3:-*}"
-    
-    log_step "Scanning for arty.yml projects in $root_dir"
-    
-    local projects=()
-    while IFS= read -r project_dir; do
-        projects+=("$project_dir")
-    done < <(find_arty_projects "$root_dir" "$pattern")
-    
-    if [[ ${#projects[@]} -eq 0 ]]; then
-        log_warn "No arty.yml projects found matching pattern: $pattern"
+  local command="$1"
+  local root_dir="${2:-.}"
+  local pattern="${3:-*}"
+
+  log_step "Scanning for arty.yml projects in $root_dir"
+
+  local projects=()
+  while IFS= read -r project_dir; do
+    projects+=("$project_dir")
+  done < <(find_arty_projects "$root_dir" "$pattern")
+
+  if [[ ${#projects[@]} -eq 0 ]]; then
+    log_warn "No arty.yml projects found matching pattern: $pattern"
+    return 1
+  fi
+
+  log_info "Found ${#projects[@]} project(s)"
+  echo
+
+  local failed=0
+  for project_dir in "${projects[@]}"; do
+    local project_name=$(basename "$project_dir")
+    echo -e "${CYAN}━━━ Processing: $project_name ━━━${NC}"
+
+    (
+      cd "$project_dir"
+
+      case "$command" in
+      version)
+        local version=$(get_current_version)
+        echo "Version: $version"
+        ;;
+      bump)
+        local bump_type="${4:-patch}"
+        local new_version=$(bump_version "$bump_type")
+        update_version "$new_version"
+        echo "Bumped to: $new_version"
+        ;;
+      status)
+        if git rev-parse --git-dir >/dev/null 2>&1; then
+          git status --short
+        else
+          echo "Not a git repository"
+        fi
+        ;;
+      *)
+        log_error "Unknown command: $command"
         return 1
-    fi
-    
-    log_info "Found ${#projects[@]} project(s)"
+        ;;
+      esac
+    ) || {
+      log_error "Failed for $project_name"
+      failed=$((failed + 1))
+    }
+
     echo
-    
-    local failed=0
-    for project_dir in "${projects[@]}"; do
-        local project_name=$(basename "$project_dir")
-        echo -e "${CYAN}━━━ Processing: $project_name ━━━${NC}"
-        
-        (
-            cd "$project_dir"
-            
-            case "$command" in
-                version)
-                    local version=$(get_current_version)
-                    echo "Version: $version"
-                    ;;
-                bump)
-                    local bump_type="${4:-patch}"
-                    local new_version=$(bump_version "$bump_type")
-                    update_version "$new_version"
-                    echo "Bumped to: $new_version"
-                    ;;
-                status)
-                    if git rev-parse --git-dir > /dev/null 2>&1; then
-                        git status --short
-                    else
-                        echo "Not a git repository"
-                    fi
-                    ;;
-                *)
-                    log_error "Unknown command: $command"
-                    return 1
-                    ;;
-            esac
-        ) || {
-            log_error "Failed for $project_name"
-            failed=$((failed + 1))
-        }
-        
-        echo
-    done
-    
-    if [[ $failed -gt 0 ]]; then
-        log_warn "$failed project(s) failed"
-        return 1
-    else
-        log_success "All projects processed successfully"
-    fi
+  done
+
+  if [[ $failed -gt 0 ]]; then
+    log_warn "$failed project(s) failed"
+    return 1
+  else
+    log_success "All projects processed successfully"
+  fi
 }
 
 # Show comprehensive mono help
 show_mono_help() {
-    cat << 'EOF'
+  cat <<'EOF'
 whip.sh mono - Monorepo management commands
 
 USAGE:
@@ -714,7 +714,7 @@ EOF
 
 # Show usage
 show_usage() {
-    cat << 'EOF'
+  cat <<'EOF'
 whip.sh - Release cycle management for arty.sh projects
 
 USAGE:
@@ -818,145 +818,145 @@ EOF
 
 # Main function
 main() {
-    if [[ $# -eq 0 ]]; then
-        show_usage
-        exit 0
-    fi
-    
-    # Parse global options
-    local push=true
-    local config="$WHIP_CONFIG"
-    local changelog="$WHIP_CHANGELOG"
-    
-    while [[ $# -gt 0 ]]; do
-        case $1 in
-            --no-push)
-                push=false
-                shift
-                ;;
-            --config)
-                config="$2"
-                WHIP_CONFIG="$config"
-                shift 2
-                ;;
-            --changelog)
-                changelog="$2"
-                WHIP_CHANGELOG="$changelog"
-                shift 2
-                ;;
-            -h|--help)
-                show_usage
-                exit 0
-                ;;
-            *)
-                break
-                ;;
-        esac
-    done
-    
-    if [[ $# -eq 0 ]]; then
-        show_usage
-        exit 0
-    fi
-    
-    local command="$1"
-    shift
-    
-    case "$command" in
-        release)
-            local bump_type="${1:-patch}"
-            release "$bump_type" "$config" "$push"
-            ;;
-        version)
-            get_current_version "$config"
-            ;;
-        bump)
-            if [[ $# -eq 0 ]]; then
-                log_error "Bump type required (major, minor, or patch)"
-                exit 1
-            fi
-            local new_version=$(bump_version "$1" "$config")
-            update_version "$new_version" "$config"
-            echo "$new_version"
-            ;;
-        changelog)
-            generate_changelog "${1:-}" "${2:-HEAD}"
-            ;;
-        tag)
-            if [[ $# -eq 0 ]]; then
-                log_error "Version required"
-                exit 1
-            fi
-            create_release_tag "$1" "${2:-Release version $1}" "$push"
-            ;;
-        hooks)
-            if [[ $# -eq 0 ]]; then
-                log_error "Hooks subcommand required (install, uninstall, create)"
-                exit 1
-            fi
-            local subcommand="$1"
-            shift
-            case "$subcommand" in
-                install)
-                    install_hooks "${1:-$WHIP_HOOKS_DIR}"
-                    ;;
-                uninstall)
-                    uninstall_hooks
-                    ;;
-                create)
-                    create_default_hooks "${1:-$WHIP_HOOKS_DIR}"
-                    ;;
-                *)
-                    log_error "Unknown hooks subcommand: $subcommand"
-                    exit 1
-                    ;;
-            esac
-            ;;
-        mono|monorepo)
-            if [[ $# -eq 0 ]]; then
-                log_error "Monorepo subcommand required"
-                show_mono_help
-                exit 1
-            fi
-            local subcommand="$1"
-            shift
-            case "$subcommand" in
-                help|--help|-h)
-                    show_mono_help
-                    ;;
-                list)
-                    find_arty_projects "${1:-.}" "${2:-*}"
-                    ;;
-                version|bump|status)
-                    monorepo_batch "$subcommand" "${1:-.}" "${2:-*}" "${3:-}"
-                    ;;
-                exec)
-                    if [[ $# -eq 0 ]]; then
-                        log_error "Command required for exec"
-                        echo "Usage: whip mono exec <command> [root] [pattern]"
-                        echo "Example: whip mono exec 'git status' . 'lib-*'"
-                        exit 1
-                    fi
-                    local cmd="$1"
-                    shift
-                    monorepo_exec "$cmd" "${1:-.}" "${2:-*}"
-                    ;;
-                *)
-                    log_error "Unknown monorepo subcommand: $subcommand"
-                    echo "Run 'whip mono help' for detailed usage"
-                    exit 1
-                    ;;
-            esac
-            ;;
-        *)
-            log_error "Unknown command: $command"
-            show_usage
-            exit 1
-            ;;
+  if [[ $# -eq 0 ]]; then
+    show_usage
+    exit 0
+  fi
+
+  # Parse global options
+  local push=true
+  local config="$WHIP_CONFIG"
+  local changelog="$WHIP_CHANGELOG"
+
+  while [[ $# -gt 0 ]]; do
+    case $1 in
+    --no-push)
+      push=false
+      shift
+      ;;
+    --config)
+      config="$2"
+      WHIP_CONFIG="$config"
+      shift 2
+      ;;
+    --changelog)
+      changelog="$2"
+      WHIP_CHANGELOG="$changelog"
+      shift 2
+      ;;
+    -h | --help)
+      show_usage
+      exit 0
+      ;;
+    *)
+      break
+      ;;
     esac
+  done
+
+  if [[ $# -eq 0 ]]; then
+    show_usage
+    exit 0
+  fi
+
+  local command="$1"
+  shift
+
+  case "$command" in
+  release)
+    local bump_type="${1:-patch}"
+    release "$bump_type" "$config" "$push"
+    ;;
+  version)
+    get_current_version "$config"
+    ;;
+  bump)
+    if [[ $# -eq 0 ]]; then
+      log_error "Bump type required (major, minor, or patch)"
+      exit 1
+    fi
+    local new_version=$(bump_version "$1" "$config")
+    update_version "$new_version" "$config"
+    echo "$new_version"
+    ;;
+  changelog)
+    generate_changelog "${1:-}" "${2:-HEAD}"
+    ;;
+  tag)
+    if [[ $# -eq 0 ]]; then
+      log_error "Version required"
+      exit 1
+    fi
+    create_release_tag "$1" "${2:-Release version $1}" "$push"
+    ;;
+  hooks)
+    if [[ $# -eq 0 ]]; then
+      log_error "Hooks subcommand required (install, uninstall, create)"
+      exit 1
+    fi
+    local subcommand="$1"
+    shift
+    case "$subcommand" in
+    install)
+      install_hooks "${1:-$WHIP_HOOKS_DIR}"
+      ;;
+    uninstall)
+      uninstall_hooks
+      ;;
+    create)
+      create_default_hooks "${1:-$WHIP_HOOKS_DIR}"
+      ;;
+    *)
+      log_error "Unknown hooks subcommand: $subcommand"
+      exit 1
+      ;;
+    esac
+    ;;
+  mono | monorepo)
+    if [[ $# -eq 0 ]]; then
+      log_error "Monorepo subcommand required"
+      show_mono_help
+      exit 1
+    fi
+    local subcommand="$1"
+    shift
+    case "$subcommand" in
+    help | --help | -h)
+      show_mono_help
+      ;;
+    list)
+      find_arty_projects "${1:-.}" "${2:-*}"
+      ;;
+    version | bump | status)
+      monorepo_batch "$subcommand" "${1:-.}" "${2:-*}" "${3:-}"
+      ;;
+    exec)
+      if [[ $# -eq 0 ]]; then
+        log_error "Command required for exec"
+        echo "Usage: whip mono exec <command> [root] [pattern]"
+        echo "Example: whip mono exec 'git status' . 'lib-*'"
+        exit 1
+      fi
+      local cmd="$1"
+      shift
+      monorepo_exec "$cmd" "${1:-.}" "${2:-*}"
+      ;;
+    *)
+      log_error "Unknown monorepo subcommand: $subcommand"
+      echo "Run 'whip mono help' for detailed usage"
+      exit 1
+      ;;
+    esac
+    ;;
+  *)
+    log_error "Unknown command: $command"
+    show_usage
+    exit 1
+    ;;
+  esac
 }
 
 # Run main if executed directly
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-    main "$@"
+  main "$@"
 fi

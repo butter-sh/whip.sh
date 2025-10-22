@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🎯 whip.sh
+# whip.sh
 
 **Release Cycle Management for arty.sh Projects**
 
